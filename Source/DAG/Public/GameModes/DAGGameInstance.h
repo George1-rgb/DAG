@@ -19,6 +19,8 @@ public:
 	double GetMaxImpulse() const { return fMaxImpulse; }
 	double GetMinImpulse() const { return fMinImpulse; }
 	double GetZImpulse() const { return fZImpulse; }
+	void SetDicesValues(const TArray<int>& nDicesCurValues);
+	const TArray<int>& GetDicesValues() const { return m_nDicesCurValues; }
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	int nDicesCount = 2;
@@ -30,4 +32,7 @@ protected:
 	double fMinImpulse = -100.0;
 	UPROPERTY(EditDefaultsOnly, Category = "Game")
 	double fZImpulse = 10.0;
+
+private:
+	TArray<int> m_nDicesCurValues = {};
 };

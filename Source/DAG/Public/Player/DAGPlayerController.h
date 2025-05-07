@@ -13,5 +13,11 @@ UCLASS()
 class DAG_API ADAGPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+public:
+	ADAGPlayerController();
+protected:
+	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
+
+	void OnLeftMouseClick();
 };

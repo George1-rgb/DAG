@@ -11,7 +11,6 @@
  * 
  */
 class UButton;
-class ADAGDice;
 UCLASS()
 class DAG_API UDAGPlayWidget : public UDAGBaseWidget
 {
@@ -22,17 +21,14 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 		UButton* btnRollDices;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Game")
-		TSubclassOf<ADAGDice> diceClass;
-
 	virtual void NativeOnInitialized() override;
 public:
 	// Called every frame
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	FString GetDicesValues() const;
 private:
 	UFUNCTION()
 		void OnRollDices();
-
-	bool bCanShowDiceValues;
-	bool m_bDiceRolling = false;
 };
