@@ -12,6 +12,15 @@ enum class EPlateType
 	kHeadPhone
 };
 
+UENUM()
+enum class ECommandNum
+{
+	kBlue = 0,
+	kGreen,
+	kYellow,
+	kRed
+};
+
 USTRUCT(BlueprintType)
 struct FDAGPlateInfo
 {

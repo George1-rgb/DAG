@@ -5,6 +5,10 @@
 #include "GameActors/DAGBasePawnController.h"
 #include "Engine/Engine.h"
 #include "Components/SceneComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/DamageType.h"
+#include "GameModes/DAGGameMode.h"
 
 // Sets default values
 ADAGBasePawn::ADAGBasePawn()
@@ -25,19 +29,44 @@ ADAGBasePawn::ADAGBasePawn()
 	smHighlight = CreateDefaultSubobject<UStaticMeshComponent>("Highlight");
 	smHighlight->SetupAttachment(smPawn);
 	smHighlight->SetHiddenInGame(true);
+
+	smCollision = CreateDefaultSubobject<USphereComponent>("CollisionComponent");
+	smCollision->InitSphereRadius(5.0f);
+	smCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	smCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	smCollision->bReturnMaterialOnMove = true;
+	smCollision->SetupAttachment(smPawn);
 }
 
 // Called when the game starts or when spawned
 void ADAGBasePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnTakeAnyDamage.AddDynamic(this, &ADAGBasePawn::OnTakeDamage);
+	//smCollision->OnComponentBeginOverlap.AddDynamic(this, &ADAGBasePawn::OnCollisionComponentOverlap);
 }
 
 // Called every frame
 void ADAGBasePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (!m_bMoving)
+		return;
 
+	m_fElapsedTime += DeltaTime;
+	float Alpha = FMath::Clamp(m_fElapsedTime / m_fMovingDuration, 0.0f, 1.0f);
+
+	FVector NewLocation = FMath::Lerp(GetActorLocation(), m_vTargetPos, Alpha);
+	SetActorLocation(NewLocation);
+
+	if (Alpha >= 1.0f)
+	{
+		m_bMoving = false;
+		m_fElapsedTime = 0.0f;
+		smCollision->SetGenerateOverlapEvents(false);
+	}
 }
 
 // Called to bind functionality to input
@@ -49,15 +78,39 @@ void ADAGBasePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ADAGBasePawn::OnPawnClicked()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("Pawn was clicked!"));
-	}
 	smHighlight->SetHiddenInGame(false);
 }
 
 void ADAGBasePawn::Deselect()
 {
 	smHighlight->SetHiddenInGame(true);
+}
+
+void ADAGBasePawn::SetNewActorLocation(const FVector& vNewPos)
+{
+	smCollision->SetGenerateOverlapEvents(false);
+	m_vTargetPos = vNewPos;
+	m_bMoving = true;
+}
+
+void ADAGBasePawn::OnTakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	auto pOtherPawn = Cast<ADAGBasePawn>(DamageCauser);
+	smHighlight->SetHiddenInGame(false);
+	Destroy();
+}
+
+void ADAGBasePawn::OnCollisionComponentOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	const FHitResult& SweepResult)
+{
+	if (!GetWorld())
+		return;
+	auto GameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	auto pOtherPawn = Cast<ADAGBasePawn>(OtherActor);
+	if (!pOtherPawn || pOtherPawn == this || GameMode->m_pCurrentSelPawn != this)
+		return;
+
+	UGameplayStatics::ApplyPointDamage(pOtherPawn, 100.0, FVector(), SweepResult, GetController(), this, m_DamageType);
 }
 

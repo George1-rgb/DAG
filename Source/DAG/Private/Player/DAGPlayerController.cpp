@@ -5,6 +5,7 @@
 #include "GameActors/DAGBasePawn.h"
 #include "GameModes/DAGGameMode.h"
 #include "GameActors/DAGDeskPlate.h"
+#include "Kismet/GameplayStatics.h"
 
 ADAGPlayerController::ADAGPlayerController()
 {
@@ -43,10 +44,22 @@ void ADAGPlayerController::OnLeftMouseClick()
         if (ClickedPawn)
         {
             if (pCurSelPawn)
+            {
                 pCurSelPawn->Deselect();
-            pGameMode->m_pCurrentSelPawn = ClickedPawn;
-            pGameMode->m_pCurrentSelPawn->OnPawnClicked();
-            pGameMode->HightLigthPlates();
+                if (ClickedPawn->GetCommandNum() != pCurSelPawn->GetCommandNum())
+                {
+                    pGameMode->DeselectPlates();
+                    FVector vNewLoc = ClickedPawn->GetActorLocation();
+                    pGameMode->MovePawn(FDAGPlateInfo(vNewLoc.X, vNewLoc.Y, vNewLoc.Z));
+                    UGameplayStatics::ApplyPointDamage(ClickedPawn, 100.0, FVector(), Hit, pCurSelPawn->GetController(), this, pCurSelPawn->GetDamageType());
+                    pGameMode->m_pCurrentSelPawn = nullptr;
+                    return;
+                }
+            }
+			pGameMode->m_pCurrentSelPawn = ClickedPawn;
+			pGameMode->m_pCurrentSelPawn->OnPawnClicked();
+			pGameMode->HightLigthPlates();
+          
         }
         else if (pCurSelPawn)
         {
@@ -56,7 +69,7 @@ void ADAGPlayerController::OnLeftMouseClick()
                 pGameMode->MovePawn(ClickedPlate->GetPlateInfo());
             }
             pCurSelPawn->Deselect();
-            pCurSelPawn = nullptr;
+            pGameMode->m_pCurrentSelPawn = nullptr;
             pGameMode->DeselectPlates();
         }
     }

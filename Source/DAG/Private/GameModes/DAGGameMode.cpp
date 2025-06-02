@@ -95,7 +95,8 @@ void ADAGGameMode::MovePawn(const FDAGPlateInfo& fPlateInfo)
 	if (!m_pCurrentSelPawn)
 		return;
 
-	m_pCurrentSelPawn->SetActorLocation(FVector(fPlateInfo.m_fX, fPlateInfo.m_fY, fPlateInfo.m_fZ));
+	//m_pCurrentSelPawn->SetActorLocation(FVector(fPlateInfo.m_fX, fPlateInfo.m_fY, fPlateInfo.m_fZ), true);
+	m_pCurrentSelPawn->SetNewActorLocation(FVector(fPlateInfo.m_fX, fPlateInfo.m_fY, fPlateInfo.m_fZ));
 }
 
 void ADAGGameMode::Tick(float DeltaSeconds)
