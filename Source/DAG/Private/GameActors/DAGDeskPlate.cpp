@@ -14,12 +14,13 @@ ADAGDeskPlate::ADAGDeskPlate()
 	//m_pPlateMesh->SetHiddenInGame(false);
 	m_pPlateMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	m_pPlateMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-
+#if WITH_EDITORONLY_DATA
 	m_pHightLight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HightLight"));
 	m_pHightLight->SetupAttachment(m_pPlateMesh);
 	m_pHightLight->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	m_pHightLight->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	m_pHightLight->SetHiddenInGame(true);
+#endif
 }
 
 // Called when the game starts or when spawned
@@ -36,7 +37,9 @@ void ADAGDeskPlate::SetPlateInfo(const FDAGPlateInfo& info)
 
 void ADAGDeskPlate::SetHightLight(bool bHightLight)
 {
+#if WITH_EDITORONLY_DATA
 	m_pHightLight->SetHiddenInGame(!bHightLight);
 	m_bIsSelected = bHightLight;
+#endif
 }
 

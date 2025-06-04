@@ -7,7 +7,8 @@ ADAGDice::ADAGDice()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	bReplicates = true;
+	SetReplicateMovement(true);
 	smDice = CreateDefaultSubobject<UStaticMeshComponent>("DiceStaticMesh");
 	SetRootComponent(smDice);
 	smDice->SetSimulatePhysics(true);

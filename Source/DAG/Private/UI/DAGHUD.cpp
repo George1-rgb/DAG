@@ -15,11 +15,15 @@ void ADAGHUD::DrawHUD()
 
 void ADAGHUD::BeginPlay()
 {
-	GameWidgets.Push(CreateWidget<UDAGBaseWidget>(GetWorld(), PlayerHUDWidgetClass));
-	for (auto GameWidget : GameWidgets)
+	/*APlayerController* PC = GetOwningPlayerController();
+	if (PC && PC->IsLocalController())
 	{
-		if (!GameWidget) continue;
-		GameWidget->AddToViewport();
-		GameWidget->SetVisibility(ESlateVisibility::Visible);
-	}
+		GameWidgets.Push(CreateWidget<UDAGBaseWidget>(GetWorld(), PlayerHUDWidgetClass));
+		for (auto GameWidget : GameWidgets)
+		{
+			if (!GameWidget) continue;
+			GameWidget->AddToViewport();
+			GameWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+	}*/
 }

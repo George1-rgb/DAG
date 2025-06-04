@@ -18,11 +18,4 @@ public:
 	virtual void DrawHUD() override;
 protected:
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
-     TSubclassOf<UUserWidget> PlayerHUDWidgetClass;
-
-private:
-	 UPROPERTY()
-      TArray<UDAGBaseWidget*> GameWidgets;
 };

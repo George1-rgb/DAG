@@ -6,9 +6,11 @@
 #include "GameModes/DAGGameMode.h"
 #include "GameActors/DAGDeskPlate.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/DAGBaseWidget.h"
 
 ADAGPlayerController::ADAGPlayerController()
 {
+    PrimaryActorTick.bCanEverTick = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true; 
 }
@@ -17,12 +19,37 @@ void ADAGPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+    FString RoleStr = HasAuthority() ? TEXT("Server") : TEXT("Client");
+    FString LocalStr = IsLocalController() ? TEXT("LocalController") : TEXT("RemoteController");
+
+    UE_LOG(LogTemp, Warning, TEXT("BeginPlay: %s | %s"), *RoleStr, *LocalStr);
 
 	bShowMouseCursor = true;
 
 	FInputModeGameAndUI InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
+
+    if (IsLocalController())
+    {
+        GameWidgets.Push(CreateWidget<UDAGBaseWidget>(GetWorld(), PlayerHUDWidgetClass));
+        for (auto GameWidget : GameWidgets)
+        {
+            if (!GameWidget) continue;
+            GameWidget->AddToPlayerScreen();
+            GameWidget->SetVisibility(ESlateVisibility::Visible);
+
+            if (GameWidget->IsInViewport())
+            {
+
+               UE_LOG(LogTemp, Warning, TEXT("Yes"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("No"));
+            }
+        }
+    }
 }
 
 void ADAGPlayerController::SetupInputComponent()
@@ -32,11 +59,21 @@ void ADAGPlayerController::SetupInputComponent()
 	InputComponent->BindAction("LeftClick", IE_Pressed, this, &ADAGPlayerController::OnLeftMouseClick);
 }
 
+void ADAGPlayerController::Tick(float DeltaSeconds)
+{
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, TEXT("Controller Tick"));
+    }
+}
+
 void ADAGPlayerController::OnLeftMouseClick()
 {
     FHitResult Hit;
     GetHitResultUnderCursor(ECC_Visibility, false, Hit);
     auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+    if (!pGameMode)
+        return;
     auto pCurSelPawn = pGameMode->m_pCurrentSelPawn;
     if (Hit.bBlockingHit)
     {

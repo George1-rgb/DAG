@@ -3,7 +3,3 @@
 
 #include "GameModes/DAGGameInstance.h"
 
-void UDAGGameInstance::SetDicesValues(const TArray<int>& nDicesCurValues)
-{
-	m_nDicesCurValues = nDicesCurValues;
-}

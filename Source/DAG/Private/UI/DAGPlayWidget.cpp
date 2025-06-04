@@ -6,6 +6,7 @@
 #include "GameModes/DAGGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameModes/DAGGameMode.h"
+#include "GameModes/DAGGameStateBase.h"
 
 void UDAGPlayWidget::NativeOnInitialized()
 {
@@ -27,12 +28,12 @@ FString UDAGPlayWidget::GetDicesValues() const
 	if (!GetWorld())
 		return FString();
 
-	auto instGameInstance = GetWorld()->GetGameInstance<UDAGGameInstance>();
-	if (!instGameInstance)
+	auto instGameState = Cast<ADAGGameStateBase>(GetWorld()->GetGameState());
+	if (!instGameState)
 		return FString();
 
 	FString strTmp;
-	for (const auto nVal : instGameInstance->GetDicesValues())
+	for (const auto nVal : instGameState->m_nDicesCurValues)
 	{
 		strTmp.Append(" ");
 		strTmp.Append(FString::FromInt(nVal));

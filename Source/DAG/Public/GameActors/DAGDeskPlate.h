@@ -26,9 +26,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UStaticMeshComponent> m_pPlateMesh;
 
+#if WITH_EDITORONLY_DATA
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UStaticMeshComponent> m_pHightLight;
-
+#endif
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
 	FDAGPlateInfo m_FPlateInfo;
 	bool m_bIsSelected = false;

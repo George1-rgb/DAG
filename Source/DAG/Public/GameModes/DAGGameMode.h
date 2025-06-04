@@ -18,7 +18,14 @@ class DAG_API ADAGGameMode : public AGameMode
 	GENERATED_BODY()
 public:
 	ADAGGameMode();
+
 	void RollDices();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRollDices();
+
+	UFUNCTION(Client, Reliable)
+	void SetDicesVals(const TArray<int>& nDicesVals);
 
 	ADAGDeskPlate* GetDeskPlate(const EPlateType& plateType, const int& nPlayerNum, const int& nFieldNum) const;
 	void HightLigthPlates();
@@ -29,6 +36,7 @@ public:
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void StartPlay() override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Game")
 	TSubclassOf<ADAGDice> diceClass;
