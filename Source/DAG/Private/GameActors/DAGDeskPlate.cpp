@@ -2,6 +2,7 @@
 
 
 #include "GameActors/DAGDeskPlate.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ADAGDeskPlate::ADAGDeskPlate()
@@ -30,16 +31,40 @@ void ADAGDeskPlate::BeginPlay()
 	
 }
 
+void ADAGDeskPlate::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Реплицируем переменную Score
+	DOREPLIFETIME(ADAGDeskPlate, m_bIsSelected);
+	DOREPLIFETIME(ADAGDeskPlate, m_FPlateInfo);
+}
+
 void ADAGDeskPlate::SetPlateInfo(const FDAGPlateInfo& info)
 {
 	m_FPlateInfo = info;
 }
 
-void ADAGDeskPlate::SetHightLight(bool bHightLight)
+void ADAGDeskPlate::Select()
 {
-#if WITH_EDITORONLY_DATA
-	m_pHightLight->SetHiddenInGame(!bHightLight);
-	m_bIsSelected = bHightLight;
-#endif
+	if (HasAuthority())
+	{
+		m_bIsSelected = true;
+		OnRep_HighlightChanged();  // чтобы сразу обновить сервер и хост
+	}
+}
+
+void ADAGDeskPlate::Deselect()
+{
+	if (HasAuthority())
+	{
+		m_bIsSelected = false;
+		OnRep_HighlightChanged();  // чтобы сразу обновить сервер и хост
+	}
+}
+
+void ADAGDeskPlate::OnRep_HighlightChanged()
+{
+	m_pHightLight->SetHiddenInGame(!m_bIsSelected);
 }
 

@@ -10,6 +10,7 @@
 #include "GameFramework/DamageType.h"
 #include "GameModes/DAGGameMode.h"
 #include "GameModes/DAGGameStateBase.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ADAGBasePawn::ADAGBasePawn()
@@ -48,6 +49,17 @@ void ADAGBasePawn::BeginPlay()
 	//smCollision->OnComponentBeginOverlap.AddDynamic(this, &ADAGBasePawn::OnCollisionComponentOverlap);
 }
 
+void ADAGBasePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ADAGBasePawn, m_bIsHighlighted);
+}
+
+void ADAGBasePawn::OnRep_HighlightChanged()
+{
+	smHighlight->SetHiddenInGame(!m_bIsHighlighted);
+}
+
 // Called every frame
 void ADAGBasePawn::Tick(float DeltaTime)
 {
@@ -79,12 +91,20 @@ void ADAGBasePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ADAGBasePawn::OnPawnClicked()
 {
-	smHighlight->SetHiddenInGame(false);
+	if (HasAuthority())
+	{
+		m_bIsHighlighted = true;
+		OnRep_HighlightChanged();  // чтобы сразу обновить сервер и хост
+	}
 }
 
 void ADAGBasePawn::Deselect()
 {
-	smHighlight->SetHiddenInGame(true);
+	if (HasAuthority())
+	{
+		m_bIsHighlighted = false;
+		OnRep_HighlightChanged();  // чтобы сразу обновить сервер и хост
+	}
 }
 
 void ADAGBasePawn::SetNewActorLocation(const FVector& vNewPos)
@@ -96,8 +116,8 @@ void ADAGBasePawn::SetNewActorLocation(const FVector& vNewPos)
 
 void ADAGBasePawn::OnTakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	auto pOtherPawn = Cast<ADAGBasePawn>(DamageCauser);
-	smHighlight->SetHiddenInGame(false);
+	//auto pOtherPawn = Cast<ADAGBasePawn>(DamageCauser);
+	//smHighlight->SetHiddenInGame(false);
 	Destroy();
 }
 

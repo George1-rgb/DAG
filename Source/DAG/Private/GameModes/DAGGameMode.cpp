@@ -120,7 +120,7 @@ void ADAGGameMode::HightLigthPlates()
 	if (!GS)
 		return;
 	for (auto& pPlate : GS->m_vPlates)
-		pPlate->SetHightLight(true);
+		pPlate->Select();
 }
 
 void ADAGGameMode::DeselectPlates()
@@ -129,7 +129,7 @@ void ADAGGameMode::DeselectPlates()
 	if (!GS)
 		return;
 	for (auto& pPlate : GS->m_vPlates)
-		pPlate->SetHightLight(false);
+		pPlate->Deselect();
 }
 
 void ADAGGameMode::MovePawn(const FDAGPlateInfo& fPlateInfo)

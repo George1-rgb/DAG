@@ -78,6 +78,11 @@ void ADAGPlayerController::ServerOnSelPawnClicked_Implementation()
 	pGameMode->OnCurSelPawnClicked();
 }
 
+void ADAGPlayerController::ServerApplyPointDamage_Implementation(ADAGBasePawn* damagedPawn, ADAGBasePawn* damageCauser, const FHitResult& Hit)
+{
+	UGameplayStatics::ApplyPointDamage(damagedPawn, 100.0, FVector(), Hit, damageCauser->GetController(), damageCauser, damageCauser->GetDamageType());
+}
+
 void ADAGPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -143,7 +148,7 @@ void ADAGPlayerController::OnLeftMouseClick()
 					ServerDeselectPlates();
 					FVector vNewLoc = ClickedPawn->GetActorLocation();
 					ServerMoveSelPawn(FDAGPlateInfo(vNewLoc.X, vNewLoc.Y, vNewLoc.Z));
-					UGameplayStatics::ApplyPointDamage(ClickedPawn, 100.0, FVector(), Hit, pCurSelPawn->GetController(), this, pCurSelPawn->GetDamageType());
+					ServerApplyPointDamage(ClickedPawn, pCurSelPawn, Hit);
 					ServerSetSelPawn(nullptr);
 					return;
 				}

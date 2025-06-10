@@ -44,7 +44,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Command")
 	ECommandNum m_eCommandNum = ECommandNum::kBlue;
 	
+	UPROPERTY(ReplicatedUsing = OnRep_HighlightChanged)
+	bool m_bIsHighlighted = false;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 public:	
+	UFUNCTION()
+	void OnRep_HighlightChanged();
+
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

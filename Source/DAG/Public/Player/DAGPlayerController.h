@@ -38,6 +38,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerOnSelPawnClicked();
 
+	UFUNCTION(Server, Reliable)
+	void ServerApplyPointDamage(ADAGBasePawn* damagedPawn, ADAGBasePawn* damageCauser, const FHitResult& Hit);
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

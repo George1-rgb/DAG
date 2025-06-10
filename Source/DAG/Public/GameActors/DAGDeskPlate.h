@@ -17,20 +17,27 @@ public:
 	ADAGDeskPlate();
 	void SetPlateInfo(const FDAGPlateInfo& info);
 	const FDAGPlateInfo& GetPlateInfo() const { return m_FPlateInfo; }
-	void SetHightLight(bool bHightLight);
+	void Select();
+	void Deselect();
 	bool IsSelected() const { return m_bIsSelected; }
+
+	UFUNCTION()
+	void OnRep_HighlightChanged();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UStaticMeshComponent> m_pPlateMesh;
 
-#if WITH_EDITORONLY_DATA
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UStaticMeshComponent> m_pHightLight;
-#endif
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Config")
 	FDAGPlateInfo m_FPlateInfo;
+
+	UPROPERTY(ReplicatedUsing = OnRep_HighlightChanged)
 	bool m_bIsSelected = false;
 };

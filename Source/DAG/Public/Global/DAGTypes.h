@@ -29,7 +29,9 @@ struct FDAGPlateInfo
 	FDAGPlateInfo() = default;
 	FDAGPlateInfo(const double& fX, const double& fY, const double& fZ)
 		: m_fX(fX), m_fY(fY), m_fZ(fZ)
-	{}
+
+	{
+	}
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	double m_fX;
