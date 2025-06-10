@@ -7,8 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameModes/DAGGameMode.h"
 #include "GameModes/DAGGameStateBase.h"
+#include "Player/DAGPlayerController.h"
 
-void UDAGPlayWidget::NativeOnInitialized()
+void UDAGPlayWidget::NativeConstruct()
 {
 	if (btnRollDices)
 	{
@@ -43,11 +44,11 @@ FString UDAGPlayWidget::GetDicesValues() const
 
 void UDAGPlayWidget::OnRollDices()
 {
-	if (!GetWorld())
-		return;
-
-	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
-	if (!pGameMode)
-		return;
-	pGameMode->RollDices();
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		if (ADAGPlayerController* DAGPC = Cast<ADAGPlayerController>(PC))
+		{
+			DAGPC->ServerRollDices();
+		}
+	}
 }

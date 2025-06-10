@@ -8,7 +8,7 @@ ADAGDeskPlate::ADAGDeskPlate()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
+	bReplicates = true;
 	m_pPlateMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlateMesh"));
 	SetRootComponent(m_pPlateMesh);
 	//m_pPlateMesh->SetHiddenInGame(false);

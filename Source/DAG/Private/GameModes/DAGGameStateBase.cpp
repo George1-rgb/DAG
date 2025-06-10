@@ -3,6 +3,7 @@
 
 #include "GameModes/DAGGameStateBase.h"
 #include "Net/UnrealNetwork.h"
+#include "GameActors/DAGBasePawn.h"
 
 ADAGGameStateBase::ADAGGameStateBase()
 {
@@ -23,10 +24,17 @@ void ADAGGameStateBase::OnRepDicesValues()
 	//UE_LOG(LogTemp, Log, TEXT("DicesValues обновилс€ на клиенте"));
 }
 
+void ADAGGameStateBase::OnRepCurrentSelPawn()
+{
+
+}
+
 void ADAGGameStateBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// –еплицируем переменную Score
 	DOREPLIFETIME(ADAGGameStateBase, m_nDicesCurValues);
+	DOREPLIFETIME(ADAGGameStateBase, m_pCurrentSelPawn);
+	DOREPLIFETIME(ADAGGameStateBase, m_vPlates);
 }

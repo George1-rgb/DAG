@@ -20,6 +20,7 @@ public:
 	ADAGGameMode();
 
 	void RollDices();
+	void OnLeftMouseClick();
 
 	UFUNCTION(Server, Reliable)
 	void ServerRollDices();
@@ -31,8 +32,9 @@ public:
 	void HightLigthPlates();
 	void DeselectPlates();
 	void MovePawn(const FDAGPlateInfo& fPlateInfo);
-
-	ADAGBasePawn* m_pCurrentSelPawn;
+	void DeselectCurSelPawn();
+	void OnCurSelPawnClicked();
+	void SetSelPawn(ADAGBasePawn* pSelPawn);
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void StartPlay() override;
@@ -43,8 +45,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Game")
 	TSubclassOf<ADAGDeskPlate> plateClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	TArray<FVector> PlayerStartLocations;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	TArray<FRotator> PlayerStartRotations;
 private:
 	bool m_bCanShowDiceValues = false;
 	bool m_bDiceRolling = false;
-	TArray<ADAGDeskPlate*> m_vPlates;
 };

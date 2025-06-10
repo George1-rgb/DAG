@@ -26,4 +26,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    class USceneComponent* Root;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    class UCameraComponent* PlayerCamera;
 };

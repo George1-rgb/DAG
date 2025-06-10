@@ -20,9 +20,19 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRepDicesValues)
 	TArray<int> m_nDicesCurValues = {};
 
+	UPROPERTY(Replicated)
+	class ADAGBasePawn* m_pCurrentSelPawn = nullptr;
+
+	UPROPERTY(Replicated)
+	TArray<class ADAGDeskPlate*> m_vPlates;
+
 	void SetDicesValues(const TArray<int>& nDicesCurValues);
+
 	UFUNCTION()
 	void OnRepDicesValues();
+
+	UFUNCTION()
+	void OnRepCurrentSelPawn();
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

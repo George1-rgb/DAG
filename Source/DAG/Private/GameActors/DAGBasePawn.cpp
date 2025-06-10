@@ -9,13 +9,14 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/DamageType.h"
 #include "GameModes/DAGGameMode.h"
+#include "GameModes/DAGGameStateBase.h"
 
 // Sets default values
 ADAGBasePawn::ADAGBasePawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	bReplicates = true;
 	smRoot = CreateDefaultSubobject<USceneComponent>("Root");
 	SetRootComponent(smRoot);
 
@@ -106,9 +107,12 @@ void ADAGBasePawn::OnCollisionComponentOverlap(UPrimitiveComponent* OverlappedCo
 {
 	if (!GetWorld())
 		return;
-	auto GameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
 	auto pOtherPawn = Cast<ADAGBasePawn>(OtherActor);
-	if (!pOtherPawn || pOtherPawn == this || GameMode->m_pCurrentSelPawn != this)
+	if (!pOtherPawn || pOtherPawn == this || GS->m_pCurrentSelPawn != this)
 		return;
 
 	UGameplayStatics::ApplyPointDamage(pOtherPawn, 100.0, FVector(), SweepResult, GetController(), this, m_DamageType);

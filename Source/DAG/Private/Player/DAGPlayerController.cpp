@@ -7,12 +7,75 @@
 #include "GameActors/DAGDeskPlate.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/DAGBaseWidget.h"
+#include "GameModes/DAGGameStateBase.h"
 
 ADAGPlayerController::ADAGPlayerController()
 {
     PrimaryActorTick.bCanEverTick = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true; 
+}
+
+void ADAGPlayerController::ServerRollDices_Implementation()
+{
+    if (!GetWorld())
+        return;
+
+    auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+    if (!pGameMode)
+        return;
+    pGameMode->RollDices();
+}
+
+void ADAGPlayerController::ServerSetSelPawn_Implementation(ADAGBasePawn* selPawn)
+{
+	if (!GetWorld())
+		return;
+
+	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	if (!pGameMode)
+		return;
+	pGameMode->SetSelPawn(selPawn);
+}
+
+void ADAGPlayerController::ServerDeselectPlates_Implementation()
+{
+	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	if (!pGameMode)
+		return;
+	pGameMode->DeselectPlates();
+}
+
+void ADAGPlayerController::ServerHightlightPlates_Implementation()
+{
+	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	if (!pGameMode)
+		return;
+	pGameMode->HightLigthPlates();
+}
+
+void ADAGPlayerController::ServerDeselectCurSelPawn_Implementation()
+{
+	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	if (!pGameMode)
+		return;
+	pGameMode->DeselectCurSelPawn();
+}
+
+void ADAGPlayerController::ServerMoveSelPawn_Implementation(const FDAGPlateInfo& fPlateInfo)
+{
+	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	if (!pGameMode)
+		return;
+	pGameMode->MovePawn(fPlateInfo);
+}
+
+void ADAGPlayerController::ServerOnSelPawnClicked_Implementation()
+{
+	auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
+	if (!pGameMode)
+		return;
+	pGameMode->OnCurSelPawnClicked();
 }
 
 void ADAGPlayerController::BeginPlay()
@@ -36,18 +99,8 @@ void ADAGPlayerController::BeginPlay()
         for (auto GameWidget : GameWidgets)
         {
             if (!GameWidget) continue;
-            GameWidget->AddToPlayerScreen();
+            GameWidget->AddToViewport();
             GameWidget->SetVisibility(ESlateVisibility::Visible);
-
-            if (GameWidget->IsInViewport())
-            {
-
-               UE_LOG(LogTemp, Warning, TEXT("Yes"));
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("No"));
-            }
         }
     }
 }
@@ -69,45 +122,47 @@ void ADAGPlayerController::Tick(float DeltaSeconds)
 
 void ADAGPlayerController::OnLeftMouseClick()
 {
-    FHitResult Hit;
-    GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-    auto pGameMode = Cast<ADAGGameMode>(GetWorld()->GetAuthGameMode());
-    if (!pGameMode)
-        return;
-    auto pCurSelPawn = pGameMode->m_pCurrentSelPawn;
-    if (Hit.bBlockingHit)
-    {
-        ADAGBasePawn* ClickedPawn = Cast<ADAGBasePawn>(Hit.GetActor());
-        if (ClickedPawn)
-        {
-            if (pCurSelPawn)
-            {
-                pCurSelPawn->Deselect();
-                if (ClickedPawn->GetCommandNum() != pCurSelPawn->GetCommandNum())
-                {
-                    pGameMode->DeselectPlates();
-                    FVector vNewLoc = ClickedPawn->GetActorLocation();
-                    pGameMode->MovePawn(FDAGPlateInfo(vNewLoc.X, vNewLoc.Y, vNewLoc.Z));
-                    UGameplayStatics::ApplyPointDamage(ClickedPawn, 100.0, FVector(), Hit, pCurSelPawn->GetController(), this, pCurSelPawn->GetDamageType());
-                    pGameMode->m_pCurrentSelPawn = nullptr;
-                    return;
-                }
-            }
-			pGameMode->m_pCurrentSelPawn = ClickedPawn;
-			pGameMode->m_pCurrentSelPawn->OnPawnClicked();
-			pGameMode->HightLigthPlates();
-          
-        }
-        else if (pCurSelPawn)
-        {
-            ADAGDeskPlate* ClickedPlate = Cast<ADAGDeskPlate>(Hit.GetActor());
-            if (ClickedPlate && ClickedPlate->IsSelected())
-            {
-                pGameMode->MovePawn(ClickedPlate->GetPlateInfo());
-            }
-            pCurSelPawn->Deselect();
-            pGameMode->m_pCurrentSelPawn = nullptr;
-            pGameMode->DeselectPlates();
-        }
-    }
+	if (!IsLocalController())
+		return;
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+	auto pGameState = Cast<ADAGGameStateBase>(GetWorld()->GetGameState());
+	if (!pGameState)
+		return;
+	auto pCurSelPawn = pGameState->m_pCurrentSelPawn;
+	if (Hit.bBlockingHit)
+	{
+		ADAGBasePawn* ClickedPawn = Cast<ADAGBasePawn>(Hit.GetActor());
+		if (ClickedPawn)
+		{
+			if (pCurSelPawn)
+			{
+				ServerDeselectCurSelPawn();
+				if (ClickedPawn->GetCommandNum() != pCurSelPawn->GetCommandNum())
+				{
+					ServerDeselectPlates();
+					FVector vNewLoc = ClickedPawn->GetActorLocation();
+					ServerMoveSelPawn(FDAGPlateInfo(vNewLoc.X, vNewLoc.Y, vNewLoc.Z));
+					UGameplayStatics::ApplyPointDamage(ClickedPawn, 100.0, FVector(), Hit, pCurSelPawn->GetController(), this, pCurSelPawn->GetDamageType());
+					ServerSetSelPawn(nullptr);
+					return;
+				}
+			}
+			ServerSetSelPawn(ClickedPawn);
+			ServerOnSelPawnClicked();
+			ServerHightlightPlates();
+
+		}
+		else if (pCurSelPawn)
+		{
+			ADAGDeskPlate* ClickedPlate = Cast<ADAGDeskPlate>(Hit.GetActor());
+			if (ClickedPlate && ClickedPlate->IsSelected())
+			{
+				ServerMoveSelPawn(ClickedPlate->GetPlateInfo());
+			}
+			ServerDeselectCurSelPawn();
+			ServerSetSelPawn(nullptr);
+			ServerDeselectPlates();
+		}
+	}
 }

@@ -21,7 +21,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 		UButton* btnRollDices;
 
-	virtual void NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
 public:
 	// Called every frame
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;

@@ -17,6 +17,7 @@ ADAGGameMode::ADAGGameMode()
 	PrimaryActorTick.bCanEverTick = true;
 	GameStateClass = ADAGGameStateBase::StaticClass();
 	PlayerControllerClass = ADAGPlayerController::StaticClass();
+	DefaultPawnClass = ADAGPawn::StaticClass();
 }
 
 void ADAGGameMode::RollDices()
@@ -29,6 +30,11 @@ void ADAGGameMode::RollDices()
 	{
 		ServerRollDices(); // клиент просит сервер кинуть
 	}
+}
+
+void ADAGGameMode::OnLeftMouseClick()
+{
+
 }
 
 void ADAGGameMode::ServerRollDices_Implementation()
@@ -95,36 +101,74 @@ void ADAGGameMode::SetDicesVals_Implementation(const TArray<int>& nDicesVals)
 
 ADAGDeskPlate* ADAGGameMode::GetDeskPlate(const EPlateType& plateType, const int& nPlayerNum, const int& nFieldNum) const
 {
-	auto pItem = *m_vPlates.FindByPredicate([&](const TObjectPtr<ADAGDeskPlate>& pPlate)
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return nullptr;
+	auto pItem = *(GS->m_vPlates.FindByPredicate([&](const TObjectPtr<ADAGDeskPlate>& pPlate)
 		{
 			return plateType == pPlate->GetPlateInfo().m_ePlateType &&
 				   nFieldNum == pPlate->GetPlateInfo().m_nFieldNum &&
 				   nPlayerNum == pPlate->GetPlateInfo().m_nPlayerNumber;
-		});
+		}));
 	return pItem;
 }
 
 void ADAGGameMode::HightLigthPlates()
 {
 	//TODO:: выделение только нужных объектов
-
-	for (auto& pPlate : m_vPlates)
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
+	for (auto& pPlate : GS->m_vPlates)
 		pPlate->SetHightLight(true);
 }
 
 void ADAGGameMode::DeselectPlates()
 {
-	for (auto& pPlate : m_vPlates)
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
+	for (auto& pPlate : GS->m_vPlates)
 		pPlate->SetHightLight(false);
 }
 
 void ADAGGameMode::MovePawn(const FDAGPlateInfo& fPlateInfo)
 {
-	if (!m_pCurrentSelPawn)
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
+	if (!GS->m_pCurrentSelPawn)
 		return;
 
-	//m_pCurrentSelPawn->SetActorLocation(FVector(fPlateInfo.m_fX, fPlateInfo.m_fY, fPlateInfo.m_fZ), true);
-	m_pCurrentSelPawn->SetNewActorLocation(FVector(fPlateInfo.m_fX, fPlateInfo.m_fY, fPlateInfo.m_fZ));
+	GS->m_pCurrentSelPawn->SetNewActorLocation(FVector(fPlateInfo.m_fX, fPlateInfo.m_fY, fPlateInfo.m_fZ));
+}
+
+void ADAGGameMode::DeselectCurSelPawn()
+{
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
+	if (!GS->m_pCurrentSelPawn)
+		return;
+	GS->m_pCurrentSelPawn->Deselect();
+}
+
+void ADAGGameMode::OnCurSelPawnClicked()
+{
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
+	if (!GS->m_pCurrentSelPawn)
+		return;
+	GS->m_pCurrentSelPawn->OnPawnClicked();
+}
+
+void ADAGGameMode::SetSelPawn(ADAGBasePawn* pSelPawn)
+{
+	if (ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>())
+	{
+		GS->m_pCurrentSelPawn = pSelPawn;
+	}
 }
 
 void ADAGGameMode::Tick(float DeltaSeconds)
@@ -172,6 +216,10 @@ void ADAGGameMode::StartPlay()
 	if (!GetWorld())
 		return;
 
+	ADAGGameStateBase* GS = GetWorld()->GetGameState<ADAGGameStateBase>();
+	if (!GS)
+		return;
+
 	TArray<AActor*> arrPlates;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), plateClass, arrPlates);
 	for (auto pActor : arrPlates)
@@ -184,7 +232,7 @@ void ADAGGameMode::StartPlay()
 			infoPlate.m_fY = pPlate->GetActorLocation().Y;
 			infoPlate.m_fZ = pPlate->GetActorLocation().Z;
 			pPlate->SetPlateInfo(infoPlate);
-			m_vPlates.Add(pPlate);
+			GS->m_vPlates.Add(pPlate);
 		}
 	}
 }
@@ -192,17 +240,23 @@ void ADAGGameMode::StartPlay()
 void ADAGGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	UE_LOG(LogTemp, Warning, TEXT("[GameMode] PostLogin for: %s | Role: %s"),
-		*NewPlayer->GetName(),
-		*UEnum::GetValueAsString(NewPlayer->GetLocalRole()));
+	
+	const int32 PlayerIndex = GetNumPlayers() - 1;
 
-	if (HasAuthority() && NewPlayer)
+	if (PlayerStartLocations.IsValidIndex(PlayerIndex))
 	{
-		// Спавним фиктивный Pawn, если не используем геймплейные Pawn'ы
-		APawn* DummyPawn = GetWorld()->SpawnActor<APawn>(ADAGPawn::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
-		if (DummyPawn)
+		FVector Location = PlayerStartLocations[PlayerIndex];
+		FRotator Rotation = PlayerStartRotations.IsValidIndex(PlayerIndex)
+			? PlayerStartRotations[PlayerIndex]
+			: FRotator::ZeroRotator;
+
+		FActorSpawnParameters Params;
+		Params.Owner = NewPlayer;
+
+		auto ObserverPawn = GetWorld()->SpawnActor<ADAGPawn>(DefaultPawnClass, Location, Rotation, Params);
+		if (ObserverPawn)
 		{
-			NewPlayer->Possess(DummyPawn);
+			NewPlayer->Possess(ObserverPawn);
 		}
 	}
 }
