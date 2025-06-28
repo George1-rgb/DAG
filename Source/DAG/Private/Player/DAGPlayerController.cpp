@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Player/DAGPlayerController.h"
@@ -8,6 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/DAGBaseWidget.h"
 #include "GameModes/DAGGameStateBase.h"
+#include "Engine/Engine.h"
+
 
 ADAGPlayerController::ADAGPlayerController()
 {
@@ -105,7 +107,7 @@ void ADAGPlayerController::BeginPlay()
         {
             if (!GameWidget) continue;
             GameWidget->AddToViewport();
-            GameWidget->SetVisibility(ESlateVisibility::Visible);
+			GameWidget->SetVisibility(ESlateVisibility::Visible);
         }
     }
 }
@@ -170,4 +172,8 @@ void ADAGPlayerController::OnLeftMouseClick()
 			ServerDeselectPlates();
 		}
 	}
+}
+
+void ADAGPlayerController::ConnectToServer()
+{
 }

@@ -14,6 +14,7 @@ class DAG_API UDAGGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 public:
+	virtual void Init() override;
 	int GetDicesCount() const { return nDicesCount; }
 	FVector GetDicesLocationDef() const { return vDicesLocationDef; }
 	double GetMaxImpulse() const { return fMaxImpulse; }

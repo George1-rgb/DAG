@@ -49,8 +49,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UI")
     TSubclassOf<UUserWidget> PlayerHUDWidgetClass;
-
 private:
 	 UPROPERTY()
      TArray<UDAGBaseWidget*> GameWidgets;
+
+	void ConnectToServer();
 };
