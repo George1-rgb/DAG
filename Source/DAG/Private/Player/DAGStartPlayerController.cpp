@@ -53,10 +53,10 @@ void ADAGStartPlayerController::ConnectToServer(const FString& strIP)
 		FString ServerAddress = strIP;  // Укажи свой адрес и порт
 		UE_LOG(LogTemp, Log, TEXT("Trying to connect to server at %s"), *ServerAddress);
 
-		UWorld* World = GetWorld();
-		if (World)
+		APlayerController* PC = GetWorld()->GetFirstPlayerController();
+		if (PC)
 		{
-			UGameplayStatics::OpenLevel(World, FName(*ServerAddress));
+			PC->ClientTravel(ServerAddress, ETravelType::TRAVEL_Absolute);
 		}
 		else
 		{
