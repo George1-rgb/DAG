@@ -2,6 +2,7 @@
 #include "GameActors/DAGDice.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 // Sets default values
 ADAGDice::ADAGDice()
 {
@@ -34,6 +35,15 @@ ADAGDice::ADAGDice()
 		pSphere.Key->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		pSphere.Key->SetupAttachment(smDice);
 	}
+
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+	ProjectileMovement->SetIsReplicated(true); // Очень важно реплицировать компонент!
+
+	// Настраиваем поведение компонента
+	ProjectileMovement->bShouldBounce = true;
+	ProjectileMovement->Bounciness = 0.6f;
+	ProjectileMovement->Friction = 0.4f;
+	ProjectileMovement->ProjectileGravityScale = 1.0f;
 }
 
 bool ADAGDice::IsDiceStopping() const

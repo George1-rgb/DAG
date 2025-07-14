@@ -11,6 +11,7 @@
 #include "GameModes/DAGGameStateBase.h"
 #include "Player/DAGPlayerController.h"
 #include "Player/DAGPawn.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 ADAGGameMode::ADAGGameMode()
 {
@@ -76,11 +77,17 @@ void ADAGGameMode::ServerRollDices_Implementation()
 
 			for (auto dice : arrDices)
 			{
-				UStaticMeshComponent* staticMesh = Cast<UStaticMeshComponent>(dice->GetRootComponent());
+				//UStaticMeshComponent* staticMesh = Cast<UStaticMeshComponent>(dice->GetRootComponent());
+				auto projectileMovement = Cast<UProjectileMovementComponent>(dice->GetComponentByClass(UProjectileMovementComponent::StaticClass()));
 				double fRandXComponent = FMath::RandRange(instGameInstance->GetMinImpulse(), instGameInstance->GetMaxImpulse());
 				double fRandYComponent = FMath::RandRange(instGameInstance->GetMinImpulse(), instGameInstance->GetMaxImpulse());
 
-				staticMesh->AddImpulse(FVector(fRandXComponent, fRandYComponent, instGameInstance->GetZImpulse()));
+				//staticMesh->AddImpulse(FVector(fRandXComponent, fRandYComponent, instGameInstance->GetZImpulse()));
+				FVector velocity = FVector(fRandXComponent, fRandYComponent, instGameInstance->GetZImpulse());
+
+				// Задаем скорость компоненту
+				projectileMovement->Velocity = velocity;
+				projectileMovement->Activate(); // Активируем движение
 			}
 			m_bDiceRolling = true;
 		};

@@ -8,6 +8,7 @@
 
 class UStaticMeshComponent;
 class USphereComponent;
+class UProjectileMovementComponent;
 UCLASS()
 class DAG_API ADAGDice : public AActor
 {
@@ -35,6 +36,10 @@ protected:
 	USphereComponent* smSphere5;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	USphereComponent* smSphere6;
+
+	// Компонент для движения
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UProjectileMovementComponent* ProjectileMovement;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
