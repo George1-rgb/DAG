@@ -14,6 +14,7 @@ ADAGDice::ADAGDice()
 	SetRootComponent(smDice);
 	smDice->SetSimulatePhysics(true);
 	smDice->SetEnableGravity(true);
+	smDice->SetIsReplicated(true);
 	smSphere1 = CreateDefaultSubobject<USphereComponent>("Sphere1SM");
 	m_smSpheres.Add(smSphere1, 1);
 	smSphere2 = CreateDefaultSubobject<USphereComponent>("Sphere2SM");
@@ -35,20 +36,20 @@ ADAGDice::ADAGDice()
 		pSphere.Key->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		pSphere.Key->SetupAttachment(smDice);
 	}
-
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	ProjectileMovement->SetIsReplicated(true); // Очень важно реплицировать компонент!
-
-	// Настраиваем поведение компонента
-	ProjectileMovement->bShouldBounce = true;
-	ProjectileMovement->Bounciness = 0.6f;
-	ProjectileMovement->Friction = 0.4f;
-	ProjectileMovement->ProjectileGravityScale = 1.0f;
 }
 
 bool ADAGDice::IsDiceStopping() const
 {
-	return smDice->GetComponentVelocity() == FVector(0.0, 0.0, 0.0);
+	if (!smDice || !smDice->IsSimulatingPhysics())
+		return true;
+
+	FVector CurrentLinearVelocity = smDice->GetPhysicsLinearVelocity();
+	FVector CurrentAngularVelocity = smDice->GetPhysicsAngularVelocityInDegrees();
+
+	bool bIsLinearVelocityLow = CurrentLinearVelocity.SizeSquared() < FMath::Square(LinearVelocityThreshold);
+	//bool bIsAngularVelocityLow = CurrentAngularVelocity.SizeSquared() < FMath::Square(AngularVelocityThreshold);
+
+	return bIsLinearVelocityLow/* && bIsAngularVelocityLow*/;
 }
 
 int ADAGDice::GetValue()

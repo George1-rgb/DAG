@@ -50,7 +50,6 @@ void ADAGDeskPlate::Select()
 	if (HasAuthority())
 	{
 		m_bIsSelected = true;
-		OnRep_HighlightChanged();  // чтобы сразу обновить сервер и хост
 	}
 }
 
@@ -59,12 +58,18 @@ void ADAGDeskPlate::Deselect()
 	if (HasAuthority())
 	{
 		m_bIsSelected = false;
-		OnRep_HighlightChanged();  // чтобы сразу обновить сервер и хост
 	}
 }
 
 void ADAGDeskPlate::OnRep_HighlightChanged()
 {
-	m_pHightLight->SetHiddenInGame(!m_bIsSelected);
+	if (m_pHightLight)
+	{
+		m_pHightLight->SetHiddenInGame(!m_bIsSelected);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ADAGDeskPlate::OnRep_HighlightChanged: m_pHightlight is nullptr for actor %s!"), *GetName());
+	}
 }
 

@@ -36,14 +36,12 @@ protected:
 	USphereComponent* smSphere5;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	USphereComponent* smSphere6;
-
-	// Компонент для движения
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    UProjectileMovementComponent* ProjectileMovement;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 private:
-	bool bIsStopping = false;
 	TMap<USphereComponent*, int> m_smSpheres;
+
+	const float LinearVelocityThreshold = 10.0f;  // Пример: 5 см/с (или 5.0f для Unreal units, обычно cm)
+	const float AngularVelocityThreshold = 10.0f; // Пример: 10 градусов/с
 };
