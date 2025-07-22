@@ -47,18 +47,12 @@ void ADAGDeskPlate::SetPlateInfo(const FDAGPlateInfo& info)
 
 void ADAGDeskPlate::Select()
 {
-	if (HasAuthority())
-	{
-		m_bIsSelected = true;
-	}
+	m_bIsSelected = true;
 }
 
 void ADAGDeskPlate::Deselect()
 {
-	if (HasAuthority())
-	{
-		m_bIsSelected = false;
-	}
+	m_bIsSelected = false;
 }
 
 void ADAGDeskPlate::OnRep_HighlightChanged()

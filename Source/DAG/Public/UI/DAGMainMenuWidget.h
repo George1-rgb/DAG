@@ -18,19 +18,4 @@ class DAG_API UDAGMainMenuWidget : public UDAGBaseWidget
 	
 public:
 	UDAGMainMenuWidget() {}
-protected:
-	virtual void NativeConstruct() override;
-protected:
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_ConnectToServ;
-
-	UPROPERTY(meta = (BindWidget))
-	UEditableTextBox* IPTextBox;
-
-	FString m_strServerIP = "";
-
-private:
-	UFUNCTION()
-		void OnConnectServer();
 };
